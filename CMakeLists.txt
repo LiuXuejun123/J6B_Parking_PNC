@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(J6M_Parking_PDC VERSION 1.0.0 LANGUAGES CXX)
+project(J6B_Parking_PNC VERSION 1.0.0 LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -33,6 +33,7 @@ find_package(Eigen3 QUIET)
 if(Eigen3_FOUND)
     message(STATUS "Eigen3 found: ${EIGEN3_INCLUDE_DIR}")
     add_definitions(-DUSE_EIGEN)
+    include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
 # 查找OSQP (用于轨迹平滑)
@@ -55,133 +56,99 @@ endif()
 
 # 包含目录
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
 )
 
-if(Eigen3_FOUND)
-    include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
+# ============================================
+# 构建各个模块
+# ============================================
 
-# 源文件列表
-set(COMMON_SOURCES
-    src/config/config_reader.cpp
-    src/mapping/data_mapper.cpp
+# Common模块 (配置读取器和公共数据类型)
+add_subdirectory(src/common)
+
+# GridMap模块 (栅格地图构建)
+add_subdirectory(src/grid_map)
+
+# ParkingSpaceEvaluation模块 (车位评估)
+add_subdirectory(src/parking_space_evaluation)
+
+# ParkingSpaceRecommendation模块 (车位推荐)
+add_subdirectory(src/parking_sapce_recommendation)
+
+# HybridAstar模块 (混合A*路径规划)
+add_subdirectory(src/hybrid_astar)
+
+# TrajectorySmoothing模块 (轨迹平滑)
+add_subdirectory(src/trajectory_smoothing)
+
+# VelocityPlanning模块 (速度规划)
+add_subdirectory(src/velocity_planning)
+
+# TrajectoryMerging模块 (轨迹合并)
+add_subdirectory(src/trajectory_merging)
+
+# TrajectoryOptimization模块 (轨迹优化)
+add_subdirectory(src/trajectory_optimization)
+
+# ControlTrajectoryOutput模块 (控制轨迹输出)
+add_subdirectory(src/trajectory_output)
+
+# ============================================
+# 创建聚合库 (可选，方便一次性链接所有模块)
+# ============================================
+add_library(j6b_parking_pnc_all STATIC
+    # 空库，通过链接依赖来聚合所有模块
 )
 
-set(PARKING_SPACE_EVAL_SOURCES
-    src/parking_space_evaluation/parking_space_evaluator.cpp
+target_link_libraries(j6b_parking_pnc_all PUBLIC
+    common
+    grid_map
+    parking_space_evaluation
+    parking_space_recommendation
+    hybrid_astar
+    trajectory_smoothing
+    velocity_planning
+    trajectory_merging
+    trajectory_optimization
+    trajectory_output
 )
 
-set(PARKING_SPACE_REC_SOURCES
-    src/parking_space_recommendation/parking_space_recommender.cpp
-)
-
-set(GRID_MAP_SOURCES
-    src/grid_map/grid_map_builder.cpp
-)
-
-set(HYBRID_ASTAR_SOURCES
-    src/hybrid_astar/hybrid_astar_planner.cpp
-)
-
-set(TRAJECTORY_SMOOTHING_SOURCES
-    src/trajectory_smoothing/trajectory_smoother.cpp
-)
-
-set(VELOCITY_PLANNING_SOURCES
-    src/velocity_planning/velocity_planner.cpp
-)
-
-set(TRAJECTORY_MERGING_SOURCES
-    src/trajectory_merging/trajectory_merger.cpp
-)
-
-set(TRAJECTORY_OPTIMIZATION_SOURCES
-    src/trajectory_optimization/trajectory_optimizer.cpp
-)
-
-set(CONTROL_TRAJECTORY_OUTPUT_SOURCES
-    src/control_trajectory_output/control_trajectory_output.cpp
-        src/common/config_reader/Config_Reader.cpp
-        src/common/config_reader/Config_Reader.h
-        src/common/datatype/APS_Planning_Datatype.h
-        src/common/math/math.h
-        src/common/math/math.h
-        src/grid_map/GridMapBuilder.cpp
-        src/grid_map/GridMapBuilder.h
-        src/mapping/Mapping.h
-        src/hybrid_astar/Hybrid_Astar.cpp
-        src/hybrid_astar/Hybrid_Astar.h
-        src/parking_sapce_recommendation/ParkingSpaceRecommender.cpp
-        src/parking_sapce_recommendation/ParkingSpaceRecommender.h
-        src/parking_space_evaluation/ParkingSpaceEvaluator.cpp
-        src/parking_space_evaluation/ParkingSpaceEvaluator.h
-        src/trajectory_merging/TrajectoryMerger.cpp
-        src/trajectory_merging/TrajectoryMerger.h
-        src/trajectory_optimization/TrajectoryOptimizer.cpp
-        src/trajectory_optimization/TrajectoryOptimizer.h
-        src/trajectory_output/ControlTrajectoryOutput.cpp
-        src/trajectory_output/ControlTrajectoryOutput.h
-        src/trajectory_smoothing/TrajectorySmoother.cpp
-        src/trajectory_smoothing/TrajectorySmoother.h
-        src/velocity_planning/VelocityPlanner.cpp
-        src/velocity_planning/VelocityPlanner.h
-        test/Test.h
-)
-
-# 创建静态库
-add_library(j6m_parking_pdc_static STATIC
-    ${COMMON_SOURCES}
-    ${PARKING_SPACE_EVAL_SOURCES}
-    ${PARKING_SPACE_REC_SOURCES}
-    ${GRID_MAP_SOURCES}
-    ${HYBRID_ASTAR_SOURCES}
-    ${TRAJECTORY_SMOOTHING_SOURCES}
-    ${VELOCITY_PLANNING_SOURCES}
-    ${TRAJECTORY_MERGING_SOURCES}
-    ${TRAJECTORY_OPTIMIZATION_SOURCES}
-    ${CONTROL_TRAJECTORY_OUTPUT_SOURCES}
-)
-
-# 链接库
-target_link_libraries(j6m_parking_pdc_static
-    yaml-cpp
-)
-
-if(Eigen3_FOUND)
-    target_link_libraries(j6m_parking_pdc_static Eigen3::Eigen)
-endif()
-
-if(OSQP_FOUND)
-    target_link_libraries(j6m_parking_pdc_static ${OSQP_LIBRARIES})
-    target_include_directories(j6m_parking_pdc_static PRIVATE ${OSQP_INCLUDE_DIRS})
-endif()
-
-if(Ipopt_FOUND)
-    target_link_libraries(j6m_parking_pdc_static ${Ipopt_LIBRARIES})
-    target_include_directories(j6m_parking_pdc_static PRIVATE ${Ipopt_INCLUDE_DIRS})
-endif()
-
-# 设置库的输出名称
-set_target_properties(j6m_parking_pdc_static PROPERTIES
-    OUTPUT_NAME j6m_parking_pdc
+# 设置聚合库的输出名称
+set_target_properties(j6b_parking_pnc_all PROPERTIES
+    OUTPUT_NAME j6b_parking_pnc
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
 
+# ============================================
 # 安装规则
-install(TARGETS j6m_parking_pdc_static
+# ============================================
+install(TARGETS 
+    common
+    grid_map
+    parking_space_evaluation
+    parking_space_recommendation
+    hybrid_astar
+    trajectory_smoothing
+    velocity_planning
+    trajectory_merging
+    trajectory_optimization
+    trajectory_output
+    j6b_parking_pnc_all
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
 
-install(DIRECTORY include/ DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
-
+# ============================================
 # 测试支持
+# ============================================
 enable_testing()
-add_subdirectory(test)
+if(EXISTS ${CMAKE_SOURCE_DIR}/test/CMakeLists.txt)
+    add_subdirectory(test)
+endif()
 
+# ============================================
 # 示例程序支持
-add_subdirectory(examples)
+# ============================================
+if(EXISTS ${CMAKE_SOURCE_DIR}/example/CMakeLists.txt)
+    add_subdirectory(example)
+endif()
