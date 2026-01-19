@@ -95,9 +95,10 @@ add_subdirectory(src/trajectory_output)
 
 # ============================================
 # 创建聚合库 (可选，方便一次性链接所有模块)
+# 注意：至少需要一个源文件，否则CMake会报错
 # ============================================
 add_library(j6b_parking_pnc_all STATIC
-    # 空库，通过链接依赖来聚合所有模块
+    src/j6b_parking_pnc_all_dummy.cpp
 )
 
 target_link_libraries(j6b_parking_pnc_all PUBLIC
