@@ -57,6 +57,7 @@ endif()
 # 包含目录
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 # ============================================
@@ -93,25 +94,19 @@ add_subdirectory(src/trajectory_optimization)
 # ControlTrajectoryOutput模块 (控制轨迹输出)
 add_subdirectory(src/trajectory_output)
 
+# Core模块 (统一接口类，封装所有模块)
+add_subdirectory(src/core)
+
 # ============================================
 # 创建聚合库 (可选，方便一次性链接所有模块)
-# 注意：至少需要一个源文件，否则CMake会报错
+# 直接使用核心接口类的实现作为源文件
 # ============================================
 add_library(j6b_parking_pnc_all STATIC
-    src/j6b_parking_pnc_all_dummy.cpp
+    src/core/J6BParkingPlanner.cpp
 )
 
 target_link_libraries(j6b_parking_pnc_all PUBLIC
-    common
-    grid_map
-    parking_space_evaluation
-    parking_space_recommendation
-    hybrid_astar
-    trajectory_smoothing
-    velocity_planning
-    trajectory_merging
-    trajectory_optimization
-    trajectory_output
+    core  # 核心接口类，已经链接了所有其他模块
 )
 
 # 设置聚合库的输出名称
@@ -134,6 +129,7 @@ install(TARGETS
     trajectory_merging
     trajectory_optimization
     trajectory_output
+    core
     j6b_parking_pnc_all
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
