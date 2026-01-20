@@ -219,8 +219,11 @@ void ControlTrajectoryOutput::ControlTrajectoryOutputProcess(const std::vector<P
 
         if(APS_Parkingstate == uint8_t(4))//aps active
         {
-            std::vector<Planning_TrajectoryPoint> output_Trajectory = this->GetFront3MTrajectory(PlanningTrajectory,current_position,3.0);
-
+            // 截取前3米轨迹
+            this->output_Trajectory =
+                GetFront3MTrajectory(PlanningTrajectory, current_position, 3.0f);
+            this->output_Trajectory_Resampled =
+                ResampleTrajectoryByDistance(output_Trajectory, 0.05f);
         }
 
 }

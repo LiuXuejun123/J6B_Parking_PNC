@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libparking_space_evaluation.a CMakeFiles/parking_space_evaluation.dir/ParkingSpaceEvaluator.cpp.o
+/usr/bin/ranlib ../../lib/libparking_space_evaluation.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libtrajectory_smoothing.a CMakeFiles/trajectory_smoothing.dir/TrajectorySmoother.cpp.o
+/usr/bin/ranlib ../../lib/libtrajectory_smoothing.a

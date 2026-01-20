@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libparking_space_recommendation.a CMakeFiles/parking_space_recommendation.dir/ParkingSpaceRecommender.cpp.o
+/usr/bin/ranlib ../../lib/libparking_space_recommendation.a

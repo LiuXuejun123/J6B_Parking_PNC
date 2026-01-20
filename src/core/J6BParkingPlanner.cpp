@@ -20,8 +20,20 @@
 #include <chrono>
 
 J6B_Parking_PNC::J6BParkingPlanner::J6BParkingPlanner()
-{   
-    
+{
+    // 初始化系统序列号
+    this->sys_seq_ = 0;
+
+    // 初始化配置读取器（可根据需要指定配置文件路径）
+    this->config_reader_ = std::make_unique<APS_Planning::common::Config_Reader>();
+
+    // 根据配置初始化各模块（后续可改为真正读取配置）
+    // 目前 ParkingSpaceEvaluator / ParkingSpaceRecommender / Hybrid_Astar /
+    // ControlTrajectoryOutput 都使用默认构造函数
+    this->parking_space_evaluator_   = std::make_unique<APS_ParkingSpace::ParkingSpaceEvaluator>();
+    this->parking_space_recommender_ = std::make_unique<APS_ParkingSpace::ParkingSpaceRecommender>();
+    this->hybrid_astar_              = std::make_unique<APS_Planning::Hybrid_Astar>();
+    this->control_trajectory_output_ = std::make_unique<APS_Planning::ControlTrajectoryOutput>();
 }
 
 J6B_Parking_PNC::J6BParkingPlanner::~J6BParkingPlanner()
@@ -54,7 +66,7 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
     auto ns  = std::chrono::duration_cast<std::chrono::nanoseconds>(duration_since_epoch - sec);
     NowTime.sec = static_cast<uint32_t>(sec.count());
     NowTime.nsec = static_cast<uint32_t>(ns.count());
-    J6B_AD::APS_Planning:: DataHeader NowHeader;
+    J6B_AD::APS_Planning::DataHeader NowHeader;
 
     this->sys_seq_ ++;
     NowHeader.stamp = NowTime;
@@ -79,9 +91,8 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
         }
         
     }
-
     //
-    this->control_trajectory_output_-> 
+    this->control_trajectory_output_-> ControlTrajectoryOutputProcess(this->hybrid_astar_->GetHybridAstarPlanningTrajectory(),Current_LocationData.pose,Current_ParkStateMachineData.apaSubSysSts);
 
 
 }

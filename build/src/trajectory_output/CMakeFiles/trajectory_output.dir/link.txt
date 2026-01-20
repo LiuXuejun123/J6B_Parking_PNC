@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libtrajectory_output.a CMakeFiles/trajectory_output.dir/ControlTrajectoryOutput.cpp.o
+/usr/bin/ranlib ../../lib/libtrajectory_output.a

@@ -5,6 +5,7 @@
 #ifndef J6B_PARKING_PNC_MATH_H
 #define J6B_PARKING_PNC_MATH_H
 #include "../datatype/APS_Planning_Datatype.h"
+#include <cmath>
 using J6B_AD::APS_Planning::Point3F;
 using J6B_AD::APS_Planning::Point3FWithCovariance;
 using J6B_AD::APS_Planning::Quaternion4FWithCovariance;

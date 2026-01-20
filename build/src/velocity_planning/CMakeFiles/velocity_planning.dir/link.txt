@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libvelocity_planning.a CMakeFiles/velocity_planning.dir/VelocityPlanner.cpp.o
+/usr/bin/ranlib ../../lib/libvelocity_planning.a

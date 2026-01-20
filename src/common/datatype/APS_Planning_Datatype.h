@@ -10,11 +10,7 @@ namespace J6B_AD {
     typedef double float64_t;
 
     namespace APS_Planning {
-    struct Planning_TrajectoryPoint
-    {
-        TrajectoryPoint Trajectory;
-        uint8_t GearPosition; 
-    };
+
 
 
 
@@ -1097,7 +1093,11 @@ namespace J6B_AD {
             uint8_t cutOutType;
             uint8_t blockType;
         };
-
+        struct Planning_TrajectoryPoint
+        {
+            TrajectoryPoint Trajectory;
+            uint8_t GearPosition; 
+        };
     }
 
 }
