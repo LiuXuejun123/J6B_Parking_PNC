@@ -10,7 +10,7 @@ namespace APS_ParkingSpace {
     class ParkingSpaceEvaluator {
         public:
             void ParkingSpaceEvaluate(const J6B_AD::APS_Planning::APAFusionOutput& APAFusionOutput);
-            inline std::vector<J6B_AD::APS_Planning::SlotFusionResult> GetValidParkingSlot();
+              std::vector<J6B_AD::APS_Planning::SlotFusionResult> GetValidParkingSlot();
         private:
             std::vector<J6B_AD::APS_Planning::SlotFusionResult> ValidParkingSlot;
     };

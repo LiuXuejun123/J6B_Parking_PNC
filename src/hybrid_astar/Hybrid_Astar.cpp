@@ -32,7 +32,7 @@ namespace APS_Planning {
 
     }
 
-    inline std::vector<Planning_TrajectoryPoint> Hybrid_Astar::GetHybridAstarPlanningTrajectory()
+      std::vector<Planning_TrajectoryPoint> Hybrid_Astar::GetHybridAstarPlanningTrajectory()
     {
         return this->PlanningTrajectory;
     }

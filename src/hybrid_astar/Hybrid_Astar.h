@@ -17,12 +17,10 @@ using J6B_AD::APS_Planning::Quaternion4FWithCovariance;
 using J6B_AD::APS_Planning::Pose;
 using J6B_AD::APS_Planning::Planning_TrajectoryPoint;
 namespace APS_Planning {
-
-
     class Hybrid_Astar {
         public:
         u_int8_t Hybrid_Astar_PlanningProcess(const Pose &pos,const u_int32_t& Planning_Slot_ID );
-        inline std::vector<Planning_TrajectoryPoint> GetHybridAstarPlanningTrajectory();
+          std::vector<Planning_TrajectoryPoint> GetHybridAstarPlanningTrajectory();
         private:
         std::vector<Planning_TrajectoryPoint> generateTrajectory(float self_x, float self_y, float self_theta);
         std::vector<std::pair<float, float>> planVelocity(float total_dist, float max_vel, bool forward);

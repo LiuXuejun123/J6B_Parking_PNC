@@ -26,7 +26,7 @@ namespace APS_ParkingSpace {
                                           const LocationData& LocationData,
                                           u_int32_t selectedid,
                                           uint8_t apaSubSysSts);
-        inline std::vector<PlanningSlotInfo> Get_ValidPalnningSlotList();
+          std::vector<PlanningSlotInfo> Get_ValidPalnningSlotList();
 
         private:
             std::vector<PlanningSlotInfo> ValidPalnningSlotList_;

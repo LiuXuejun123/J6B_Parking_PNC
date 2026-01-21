@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include "common/datatype/APS_Planning_Datatype.h"
 #include "common/config_reader/Config_Reader.h"
 #include "grid_map/GridMapBuilder.h"
@@ -20,11 +21,19 @@
 #include "trajectory_merging/TrajectoryMerger.h"
 #include "trajectory_optimization/TrajectoryOptimizer.h"
 #include "trajectory_output/ControlTrajectoryOutput.h"
+
 using APS_Planning::common::Config_Reader;
 using APS_ParkingSpace::ParkingSpaceEvaluator;
 using APS_ParkingSpace::ParkingSpaceRecommender;
 using APS_Planning::Hybrid_Astar;
 using APS_Planning::ControlTrajectoryOutput;
+
+using J6B_AD::APS_Planning::TrajectoryPoint;
+using J6B_AD::APS_Planning::Point3FWithCovariance;
+using J6B_AD::APS_Planning::Quaternion4FWithCovariance;
+using J6B_AD::APS_Planning::Pose;
+using J6B_AD::APS_Planning::Planning_TrajectoryPoint;
+
 namespace J6B_Parking_PNC {
 
 
@@ -53,6 +62,7 @@ namespace J6B_Parking_PNC {
     
     private:
         uint32_t sys_seq_;
+        uint8_t planningState;
         std::unique_ptr<Config_Reader> config_reader_;
         //std::unique_ptr<GridMapBuilder> grid_map_builder_;
         std::unique_ptr<ParkingSpaceEvaluator> parking_space_evaluator_;
@@ -63,7 +73,9 @@ namespace J6B_Parking_PNC {
         // std::unique_ptr<TrajectoryMerger> trajectory_merger_;
         // std::unique_ptr<TrajectoryOptimizer> trajectory_optimizer_;
         std::unique_ptr<ControlTrajectoryOutput> control_trajectory_output_;
-
+        
+        // 
+        std::vector<Planning_TrajectoryPoint> CurrentFullPath;
 
 
 

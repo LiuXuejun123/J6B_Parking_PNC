@@ -9,7 +9,7 @@ namespace APS_ParkingSpace {
     void ParkingSpaceEvaluator::ParkingSpaceEvaluate(const J6B_AD::APS_Planning::APAFusionOutput &APAFusionOutput)
     {
         this->ValidParkingSlot.clear();
-        for(size_t i = 0; i<APAFusionOutput.pld.pldFusionResultVaildSize;i++)
+        for(int32_t i = 0; i<APAFusionOutput.pld.pldFusionResultVaildSize;i++)
         {
            if (APAFusionOutput.pld.pldFusionResult[i].OccType == u_int32_t(0))
            {
@@ -20,7 +20,7 @@ namespace APS_ParkingSpace {
         }
     }
 
-    inline std::vector<J6B_AD::APS_Planning::SlotFusionResult> ParkingSpaceEvaluator::GetValidParkingSlot()
+      std::vector<J6B_AD::APS_Planning::SlotFusionResult> ParkingSpaceEvaluator::GetValidParkingSlot()
     {
         return this->ValidParkingSlot;
     }

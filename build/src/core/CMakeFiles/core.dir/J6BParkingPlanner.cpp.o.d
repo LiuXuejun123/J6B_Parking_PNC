@@ -164,7 +164,12 @@ src/core/CMakeFiles/core.dir/J6BParkingPlanner.cpp.o: \
  /usr/include/c++/13/pstl/execution_defs.h /usr/include/c++/13/vector \
  /usr/include/c++/13/bits/stl_vector.h \
  /usr/include/c++/13/bits/stl_bvector.h \
- /usr/include/c++/13/bits/vector.tcc \
+ /usr/include/c++/13/bits/vector.tcc /usr/include/c++/13/algorithm \
+ /usr/include/c++/13/bits/stl_algo.h \
+ /usr/include/c++/13/bits/algorithmfwd.h \
+ /usr/include/c++/13/bits/stl_heap.h \
+ /usr/include/c++/13/bits/uniform_int_dist.h \
+ /usr/include/c++/13/pstl/glue_algorithm_defs.h \
  /home/lxj/Desktop/Parking/J6B_Parking_PNC/src/common/datatype/APS_Planning_Datatype.h \
  /usr/include/c++/13/cstdint \
  /home/lxj/Desktop/Parking/J6B_Parking_PNC/src/common/config_reader/Config_Reader.h \
@@ -244,13 +249,7 @@ src/core/CMakeFiles/core.dir/J6BParkingPlanner.cpp.o: \
  /usr/include/c++/13/bits/hashtable.h \
  /usr/include/c++/13/bits/hashtable_policy.h \
  /usr/include/c++/13/bits/enable_special_members.h \
- /usr/include/c++/13/valarray /usr/include/c++/13/algorithm \
- /usr/include/c++/13/bits/stl_algo.h \
- /usr/include/c++/13/bits/algorithmfwd.h \
- /usr/include/c++/13/bits/stl_heap.h \
- /usr/include/c++/13/bits/uniform_int_dist.h \
- /usr/include/c++/13/pstl/glue_algorithm_defs.h \
- /usr/include/c++/13/bits/valarray_array.h \
+ /usr/include/c++/13/valarray /usr/include/c++/13/bits/valarray_array.h \
  /usr/include/c++/13/bits/valarray_array.tcc \
  /usr/include/c++/13/bits/valarray_before.h \
  /usr/include/c++/13/bits/slice_array.h \

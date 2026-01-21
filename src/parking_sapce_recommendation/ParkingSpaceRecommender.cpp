@@ -68,9 +68,8 @@ namespace APS_ParkingSpace {
         
     }
 
-    inline std::vector<PlanningSlotInfo> ParkingSpaceRecommender::Get_ValidPalnningSlotList()
+      std::vector<PlanningSlotInfo> ParkingSpaceRecommender::Get_ValidPalnningSlotList()
     {
-
 
         return this->ValidPalnningSlotList_;
     }

@@ -24,8 +24,11 @@ namespace APS_Planning {
                                         const J6B_AD::APS_Planning::Pose& current_pos,
                                         uint8_t APS_Parkingstate);  
         
-        
+          std::vector<Planning_TrajectoryPoint> GetCurrentSegTrojectory();
+          std::vector<Planning_TrajectoryPoint> GetCurrentSegTrojectory_out();
         private:
+        float32_t Total_S;
+        Point3F Last_Position;
         std::vector<Planning_TrajectoryPoint> output_Trajectory;
         std::vector<Planning_TrajectoryPoint> output_Trajectory_Resampled;
         
@@ -37,6 +40,7 @@ namespace APS_Planning {
         std::vector<Planning_TrajectoryPoint> GetFront3MTrajectory(
             const std::vector<Planning_TrajectoryPoint>& full_trajectory,
             const Point3F& current_pos,
+            float32_t traveled_S, // 新增：已行驶距离S
             float32_t target_distance = 3.0f); 
         std::vector<Planning_TrajectoryPoint> ResampleTrajectoryByDistance(
             const std::vector<Planning_TrajectoryPoint>& input_trajectory,
