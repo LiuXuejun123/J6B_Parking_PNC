@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../../lib/libtrajectory_optimization.a CMakeFiles/trajectory_optimization.dir/TrajectoryOptimizer.cpp.o
-/usr/bin/ranlib ../../lib/libtrajectory_optimization.a

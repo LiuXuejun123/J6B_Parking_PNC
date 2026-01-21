@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../../lib/libhybrid_astar.a CMakeFiles/hybrid_astar.dir/Hybrid_Astar.cpp.o
-/usr/bin/ranlib ../../lib/libhybrid_astar.a

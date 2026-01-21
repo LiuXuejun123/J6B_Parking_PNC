@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libj6b_parking_pnc.a CMakeFiles/j6b_parking_pnc_all.dir/src/core/J6BParkingPlanner.cpp.o
-/usr/bin/ranlib lib/libj6b_parking_pnc.a

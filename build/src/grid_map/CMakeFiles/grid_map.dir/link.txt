@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../../lib/libgrid_map.a CMakeFiles/grid_map.dir/GridMapBuilder.cpp.o
-/usr/bin/ranlib ../../lib/libgrid_map.a
