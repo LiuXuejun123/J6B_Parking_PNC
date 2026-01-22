@@ -7,15 +7,16 @@
 #include <vector>
 #include <cmath>
 #include <chrono>
-#include <cstdint>   // uint8_t
+#include <cstdint>
 
-#include "common/datatype/APS_Planning_Datatype.h"
-#include "common/math/math.h"
+#include "APS_Planning_Datatype.h"
+#include "Planning_Math.h"
 using J6B_AD::APS_Planning::TrajectoryPoint;
 using J6B_AD::APS_Planning::Point3FWithCovariance;
 using J6B_AD::APS_Planning::Quaternion4FWithCovariance;
 using J6B_AD::APS_Planning::Pose;
 using J6B_AD::APS_Planning::Planning_TrajectoryPoint;
+
 namespace APS_Planning {
     class Hybrid_Astar {
         public:

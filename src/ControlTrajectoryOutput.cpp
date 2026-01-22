@@ -3,32 +3,74 @@
 //
 
 #include "ControlTrajectoryOutput.h"
+#include <limits>
 
 namespace APS_Planning {
 
-// ===================== 独立的工具函数 =====================
-/**
- * @brief 计算两个三维点在XY平面的欧氏距离（忽略Z轴）
- */
-float32_t CalculatePlaneDistance(const Point3F& p1, const Point3F& p2) {
-    float32_t dx = p1.x - p2.x;
-    float32_t dy = p1.y - p2.y;
-    return std::sqrt(dx * dx + dy * dy);
-}
+    /**
+     * @brief 计算两个三维点在XY平面的欧氏距离（忽略Z轴）
+     */
+    float32_t ControlTrajectoryOutput::CalculatePlaneDistance(const Point3F& p1, const Point3F& p2) {
+        float32_t dx = p1.x - p2.x;
+        float32_t dy = p1.y - p2.y;
+        return std::sqrt(dx * dx + dy * dy);
+    }
 
-/**
- * @brief 【核心封装函数】结合已行驶距离S和位置，精准查找轨迹起始索引
- * @param full_trajectory 完整轨迹列表
- * @param current_pos 当前后轴位置（Point3F）
- * @param traveled_S 车辆已行驶的累计距离（单位需与轨迹点s字段一致，如米）
- * @param s_weight S偏差的权重（默认0.7，位置距离权重0.3，可调整）
- * @return 最匹配的轨迹起始索引
+    /**
+ * @brief 对Point3F进行线性插值
  */
-size_t FindTrajectoryStartIndex(
+    Point3F ControlTrajectoryOutput::LerpPoint3F(const Point3F& a, const Point3F& b, float32_t ratio) {
+        Point3F result;
+        result.x = a.x + (b.x - a.x) * ratio;
+        result.y = a.y + (b.y - a.y) * ratio;
+        result.z = a.z + (b.z - a.z) * ratio;
+        return result;
+    }
+
+    /**
+     * @brief 对TrajectoryPoint进行线性插值
+     */
+    TrajectoryPoint ControlTrajectoryOutput::LerpTrajectoryPoint(const TrajectoryPoint& a, const TrajectoryPoint& b, float32_t ratio) {
+        TrajectoryPoint result;
+        result.point = LerpPoint3F(a.point, b.point, ratio);
+        result.heading = a.heading + (b.heading - a.heading) * ratio;
+        result.kappa = a.kappa + (b.kappa - a.kappa) * ratio;
+        result.dkappa = a.dkappa + (b.dkappa - a.dkappa) * ratio;
+        result.velocity = a.velocity + (b.velocity - a.velocity) * ratio;
+        result.acceleration = a.acceleration + (b.acceleration - a.acceleration) * ratio;
+        result.jerk = a.jerk + (b.jerk - a.jerk) * ratio;
+        result.t = static_cast<int16_t>(a.t + (b.t - a.t) * ratio);
+        result.s = static_cast<int16_t>(a.s + (b.s - a.s) * ratio);
+        return result;
+    }
+
+    /**
+     * @brief 对Planning_TrajectoryPoint进行线性插值
+     */
+    Planning_TrajectoryPoint ControlTrajectoryOutput::LerpPlanningTrajectoryPoint(const Planning_TrajectoryPoint& a,
+                                                         const Planning_TrajectoryPoint& b,
+                                                         float32_t ratio) {
+        Planning_TrajectoryPoint result;
+        // 若档位不同，这里简单采用起点的档位
+        result.Trajectory = LerpTrajectoryPoint(a.Trajectory, b.Trajectory, ratio);
+        result.GearPosition = a.GearPosition;
+        return result;
+    }
+
+
+    /**
+     * @brief 【核心封装函数】结合已行驶距离S和位置，精准查找轨迹起始索引
+     * @param full_trajectory 完整轨迹列表
+     * @param current_pos 当前后轴位置（Point3F）
+     * @param traveled_S 车辆已行驶的累计距离（单位需与轨迹点s字段一致，如米）
+     * @param s_weight S偏差的权重（默认0.7，位置距离权重0.3，可调整）
+     * @return 最匹配的轨迹起始索引
+     */
+size_t ControlTrajectoryOutput::FindTrajectoryStartIndex(
     const std::vector<Planning_TrajectoryPoint>& full_trajectory,
     const Point3F& current_pos,
     float32_t traveled_S,
-    float32_t s_weight = 0.7f) {
+    float32_t s_weight ) {
     
     // 边界1：轨迹为空，返回0（或根据业务抛异常）
     if (full_trajectory.empty()) {
@@ -41,7 +83,7 @@ size_t FindTrajectoryStartIndex(
 
     // 1. 计算轨迹的S总范围（用于S偏差归一化）
     float32_t total_S_range = static_cast<float32_t>(
-        full_trajectory.back().Trajectory.s - full_trajectory.front().Trajectory.s);
+        full_trajectory.back().Trajectory.s - full_trajectory.front().Trajectory.s)/100;
 
     // 2. 计算轨迹的最大位置距离（用于位置距离归一化）
     float32_t max_pos_dist = 0.0f;
@@ -56,7 +98,7 @@ size_t FindTrajectoryStartIndex(
     // 遍历所有轨迹点，计算综合评分
     for (size_t i = 0; i < full_trajectory.size(); ++i) {
         const auto& traj_point = full_trajectory[i];
-        float32_t point_S = static_cast<float32_t>(traj_point.Trajectory.s); // 轨迹点的累计行驶距离
+        float32_t point_S = static_cast<float32_t>(traj_point.Trajectory.s)/100; // 轨迹点的累计行驶距离
 
         // 1. 计算S偏差（归一化）
         float32_t s_diff = std::abs(point_S - traveled_S);
@@ -79,56 +121,17 @@ size_t FindTrajectoryStartIndex(
     return best_index;
 }
 
-/**
- * @brief 对Point3F进行线性插值
- */
-Point3F LerpPoint3F(const Point3F& a, const Point3F& b, float32_t ratio) {
-    Point3F result;
-    result.x = a.x + (b.x - a.x) * ratio;
-    result.y = a.y + (b.y - a.y) * ratio;
-    result.z = a.z + (b.z - a.z) * ratio;
-    return result;
-}
 
-/**
- * @brief 对TrajectoryPoint进行线性插值
- */
-TrajectoryPoint LerpTrajectoryPoint(const TrajectoryPoint& a, const TrajectoryPoint& b, float32_t ratio) {
-    TrajectoryPoint result;
-    result.point = LerpPoint3F(a.point, b.point, ratio);
-    result.heading = a.heading + (b.heading - a.heading) * ratio;
-    result.kappa = a.kappa + (b.kappa - a.kappa) * ratio;
-    result.dkappa = a.dkappa + (b.dkappa - a.dkappa) * ratio;
-    result.velocity = a.velocity + (b.velocity - a.velocity) * ratio;
-    result.acceleration = a.acceleration + (b.acceleration - a.acceleration) * ratio;
-    result.jerk = a.jerk + (b.jerk - a.jerk) * ratio;
-    result.t = static_cast<int16_t>(a.t + (b.t - a.t) * ratio);
-    result.s = static_cast<int16_t>(a.s + (b.s - a.s) * ratio);
-    return result;
-}
 
-/**
- * @brief 对Planning_TrajectoryPoint进行线性插值
- */
-Planning_TrajectoryPoint LerpPlanningTrajectoryPoint(const Planning_TrajectoryPoint& a, 
-                                                     const Planning_TrajectoryPoint& b, 
-                                                     float32_t ratio) {
-    if (a.GearPosition != b.GearPosition) {
-        
-    }
-    Planning_TrajectoryPoint result;
-    result.Trajectory = LerpTrajectoryPoint(a.Trajectory, b.Trajectory, ratio);
-    result.GearPosition = a.GearPosition;
-    return result;
-}
+
 /**
  * @brief 截取从当前位置开始的前3米轨迹（按档位分段）
  */
-std::vector<Planning_TrajectoryPoint> GetFront3MTrajectory(
+std::vector<Planning_TrajectoryPoint> ControlTrajectoryOutput::GetFront3MTrajectory(
     const std::vector<Planning_TrajectoryPoint>& full_trajectory,
     const Point3F& current_pos,
     float32_t traveled_S, // 新增：已行驶距离S
-    float32_t target_distance = 3.0f) {
+    float32_t target_distance) {
     
     std::vector<Planning_TrajectoryPoint> result_trajectory;
     if (full_trajectory.empty()) {
@@ -140,7 +143,7 @@ std::vector<Planning_TrajectoryPoint> GetFront3MTrajectory(
     size_t start_index = FindTrajectoryStartIndex(full_trajectory, current_pos, traveled_S);
 
     // 后续逻辑保持不变
-    u_int8_t current_gear = full_trajectory[start_index].GearPosition;
+    uint8_t current_gear = full_trajectory[start_index].GearPosition;
     float32_t accumulated_distance = 0.0f;
 
     for (size_t i = start_index; i < full_trajectory.size(); ++i) {
@@ -169,16 +172,16 @@ std::vector<Planning_TrajectoryPoint> GetFront3MTrajectory(
 /**
  * @brief 对轨迹进行重采样，生成固定间距的轨迹点（默认5cm）
  */
-std::vector<Planning_TrajectoryPoint> ResampleTrajectoryByDistance(
+std::vector<Planning_TrajectoryPoint> ControlTrajectoryOutput::ResampleTrajectoryByDistance(
     const std::vector<Planning_TrajectoryPoint>& input_trajectory,
-    float32_t sample_interval = 0.05f) {
+    float32_t sample_interval) {
     
     std::vector<Planning_TrajectoryPoint> resampled_trajectory;
     if (input_trajectory.size() < 2) {
         return input_trajectory;
     }
 
-    u_int8_t gear = input_trajectory[0].GearPosition;
+    uint8_t gear = input_trajectory[0].GearPosition;
     for (const auto& p : input_trajectory) {
         if (p.GearPosition != gear) {
            
@@ -243,16 +246,23 @@ void ControlTrajectoryOutput::ControlTrajectoryOutputProcess(const std::vector<P
         current_position.y = current_pos.position.y;
         current_position.z = current_pos.position.z;
 
-        this->Total_S += this->CalculatePlaneDistance(this->Last_Position,current_position);
+        if (!initialized_) {
+            // 首次调用：仅建立参考点，不累加里程
+            this->Last_Position = current_position;
+            this->Total_S = 0.0f;
+            this->initialized_ = true;
+        } else {
+            this->Total_S += this->CalculatePlaneDistance(this->Last_Position,current_position);
+            this->Last_Position = current_position;
+        }
 
-        if(APS_Parkingstate == uint8_t(4))//aps active
+        if(APS_Parkingstate == 4)//aps active
         {
             // 截取前3米轨迹
             this->output_Trajectory = GetFront3MTrajectory(PlanningTrajectory, current_position,this->Total_S, 3.0f);
-            this->output_Trajectory_Resampled = ResampleTrajectoryByDistance(output_Trajectory, 0.05f);
+            this->output_Trajectory_Resampled = ResampleTrajectoryByDistance(this->output_Trajectory, 0.05f);
 
         }
-        this->Last_Position = current_position;
 }
 
   std::vector<Planning_TrajectoryPoint> ControlTrajectoryOutput::GetCurrentSegTrojectory()

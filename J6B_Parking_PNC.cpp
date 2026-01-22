@@ -1,31 +1,22 @@
-//
-// J6B Parking PNC 统一接口类实现
-//
 
-#include "J6BParkingPlanner.h"
-
-// 包含各个模块的头文件
-#include "common/config_reader/Config_Reader.h"
-#include "grid_map/GridMapBuilder.h"
-#include "parking_space_evaluation/ParkingSpaceEvaluator.h"
-#include "parking_sapce_recommendation/ParkingSpaceRecommender.h"
-#include "hybrid_astar/Hybrid_Astar.h"
-#include "trajectory_smoothing/TrajectorySmoother.h"
-#include "velocity_planning/VelocityPlanner.h"
-#include "trajectory_merging/TrajectoryMerger.h"
-#include "trajectory_optimization/TrajectoryOptimizer.h"
-#include "trajectory_output/ControlTrajectoryOutput.h"
+#include <iostream>
 #include <cmath>
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+
+#include "J6B_Parking_PNC.h"
+
 J6B_Parking_PNC::J6BParkingPlanner::J6BParkingPlanner()
-{   
+{
     // 初始化系统序列号
     this->sys_seq_ = 0;
 
+    // 初始化规划状态
+    this->planningState = 0;
+
     // 初始化配置读取器（可根据需要指定配置文件路径）
-    this->config_reader_ = std::make_unique<APS_Planning::common::Config_Reader>();
+    //this->config_reader_ = std::make_unique<APS_Planning::common::Config_Reader>();
 
     // 根据配置初始化各模块（后续可改为真正读取配置）
     // 目前 ParkingSpaceEvaluator / ParkingSpaceRecommender / Hybrid_Astar /
@@ -51,12 +42,12 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
     const J6B_AD::APS_Planning::VehicleConf &Current_VehicleConf,
     const J6B_AD::APS_Planning::FT_VehicleDataV3 &Current_FT_VehicleDataV3,
     const J6B_AD::APS_Planning::UIToPlanningDataDebug &Current_UIToPlanningDataDebug,
-    J6B_AD::APS_Planning::ParkPlanningData Current_ParkPlanningData,
-    J6B_AD::APS_Planning::AlgInitSts Current_AlgorithmInitSts,
-    J6B_AD::APS_Planning::ParkPlaningState Current_ParkPlaningState,
-    J6B_AD::APS_Planning::ParkPlanningInfo Current_ParkPlanningInfo,
-    J6B_AD::APS_Planning::ParkPlanningUIInfo Current_ParkPlanningUIInfo,
-    J6B_AD::APS_Planning::ParkPlanningDebug Current_ParkPlanningDebug)
+    J6B_AD::APS_Planning::ParkPlanningData &Current_ParkPlanningData,
+    J6B_AD::APS_Planning::AlgInitSts &Current_AlgorithmInitSts,
+    J6B_AD::APS_Planning::ParkPlaningState &Current_ParkPlaningState,
+    J6B_AD::APS_Planning::ParkPlanningInfo &Current_ParkPlanningInfo,
+    J6B_AD::APS_Planning::ParkPlanningUIInfo &Current_ParkPlanningUIInfo,
+    J6B_AD::APS_Planning::ParkPlanningDebug &Current_ParkPlanningDebug)
 {
     (void)Current_ParkPlanningDebug;
     (void)Current_UIToSTMData;
@@ -101,9 +92,9 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
                 this->CurrentFullPath = this->hybrid_astar_->GetHybridAstarPlanningTrajectory();
             }
         }
-        
+
     }
-    // 
+    //
     // output process
     this->control_trajectory_output_-> ControlTrajectoryOutputProcess(this->hybrid_astar_->GetHybridAstarPlanningTrajectory(),Current_LocationData.pose,Current_ParkStateMachineData.apaSubSysSts);
 
@@ -122,25 +113,34 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
 
     //输出 ParkPlanningData
     Current_ParkPlanningData.header = NowHeader;
-    Current_ParkPlanningData.targetPoint = this->hybrid_astar_->GetHybridAstarPlanningTrajectory().back().Trajectory.point;
-    Current_ParkPlanningData.targetHeading = this->hybrid_astar_->GetHybridAstarPlanningTrajectory().back().Trajectory.heading;
-
-    
-
-
-    Current_ParkPlanningData.turnLight = 0;
-    Current_ParkPlanningData.trajectoryPointsValidSize = this->control_trajectory_output_->GetCurrentSegTrojectory_out().size();
-    for(size_t i = 0; i < this->control_trajectory_output_->GetCurrentSegTrojectory_out().size();i++)
-    {
-        Current_ParkPlanningData.trajectoryPoints[i] = this->control_trajectory_output_->GetCurrentSegTrojectory_out()[i].Trajectory;
+    const auto& hybrid_traj = this->hybrid_astar_->GetHybridAstarPlanningTrajectory();
+    if (!hybrid_traj.empty()) {
+        Current_ParkPlanningData.targetPoint   = hybrid_traj.back().Trajectory.point;
+        Current_ParkPlanningData.targetHeading = hybrid_traj.back().Trajectory.heading;
     }
 
-    Current_ParkPlanningData.gear = this->control_trajectory_output_->GetCurrentSegTrojectory().begin()->GearPosition;
-    if(this->control_trajectory_output_->GetCurrentSegTrojectory_out().size() < 2)
+    Current_ParkPlanningData.turnLight = 0;
+
+    const auto& seg_traj_out = this->control_trajectory_output_->GetCurrentSegTrojectory_out();
+    const size_t max_traj_points = 60;
+    size_t copy_size = std::min(seg_traj_out.size(), max_traj_points);
+    Current_ParkPlanningData.trajectoryPointsValidSize = static_cast<uint16_t>(copy_size);
+    for (size_t i = 0; i < copy_size; ++i)
+    {
+        Current_ParkPlanningData.trajectoryPoints[i] = seg_traj_out[i].Trajectory;
+    }
+
+    const auto& seg_traj = this->control_trajectory_output_->GetCurrentSegTrojectory();
+    if (!seg_traj.empty()) {
+        Current_ParkPlanningData.gear = seg_traj.begin()->GearPosition;
+    } else {
+        Current_ParkPlanningData.gear = 0; // P
+    }
+    if (seg_traj_out.size() < 2)
     {
         Current_ParkPlanningData.gear = 0;//p
     }
-   
+
     Current_ParkPlanningData.isSapa = 0;
 
     //输出 ParkPlanningState
@@ -152,7 +152,7 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
         {
             Current_ParkPlaningState.smBackGrndSlotAvail = 0;
         }
-        
+
     }
 
     if (this->planningState == 1)
@@ -169,7 +169,9 @@ void J6B_Parking_PNC::J6BParkingPlanner::parkingspacevalidateprocess(
     }
 
     //Current_ParkPlanningUIInfo
-    for(size_t i = 0; i < this->control_trajectory_output_->GetCurrentSegTrojectory_out().size();i++)
+    const size_t max_ui_points = 128;
+    size_t ui_size = std::min(this->control_trajectory_output_->GetCurrentSegTrojectory_out().size(), max_ui_points);
+    for(size_t i = 0; i < ui_size; i++)
     {
         Current_ParkPlanningUIInfo.parkPathPoint[i].point = this->control_trajectory_output_->GetCurrentSegTrojectory_out()[i].Trajectory.point;
         Current_ParkPlanningUIInfo.parkPathPoint[i].heading = this->control_trajectory_output_->GetCurrentSegTrojectory_out()[i].Trajectory.heading;

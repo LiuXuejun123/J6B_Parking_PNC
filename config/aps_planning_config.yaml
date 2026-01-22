@@ -1,56 +1,44 @@
-# 公共配置参数
-common:
-  map_resolution: 0.1  # 栅格地图分辨率（米/栅格）
-  default_time_step: 0.1  # 默认时间步长（秒）
-  
-# 控制轨迹输出模块配置
-control_trajectory_output:
-  lookahead_distance: 3.0  # 前瞻距离（米）
-  min_points: 10           # 最小输出点数
-  sample_interval: 0.1     # 采样间隔（秒）
-  
-# 栅格地图构建模块配置
-grid_map:
-  resolution: 0.1         # 栅格分辨率（米）
-  map_width: 50.0         # 地图宽度（米）
-  map_height: 50.0        # 地图高度（米）
-  inflation_radius: 0.3   # 障碍物膨胀半径（米）
-  
-# 车位评估模块配置
-parking_space_evaluation:
-  min_width: 2.3          # 最小宽度（米）
-  max_width: 3.5          # 最大宽度（米）
-  min_length: 4.5         # 最小长度（米）
-  max_length: 6.0         # 最大长度（米）
-  max_angle_diff: 0.174   # 最大角度差（弧度，约10度）
-  
-# 车位推荐模块配置
-parking_space_recommendation:
-  max_spaces: 10          # 最大维护车位数量
-  default_top_k: 3        # 默认推荐前k个车位
-  distance_weight: 1.0    # 距离权重
-  angle_weight: 0.5       # 角度权重
-  size_weight: 0.3        # 尺寸权重
-  
-# 轨迹优化模块配置
-trajectory_optimization:
-  max_curvature: 0.3      # 最大曲率（1/m）
-  collision_margin: 0.2   # 碰撞安全边距（米）
-  max_iterations: 50      # 最大迭代次数
+# APS Planning Configuration File
+# 用于测试和开发的最小化配置
 
-# 轨迹平滑模块配置
+control_trajectory_output:
+  lookahead_distance: 3.0
+  min_points: 10
+  sample_interval: 0.05
+
+grid_map:
+  resolution: 0.1
+  map_width: 50.0
+  map_height: 50.0
+  inflation_radius: 0.5
+
+parking_space_evaluation:
+  min_width: 2.0
+  max_width: 3.5
+  min_length: 4.5
+  max_length: 6.0
+  max_angle_diff: 0.2
+
+parking_space_recommendation:
+  max_spaces: 20
+  default_top_k: 5
+  distance_weight: 0.5
+  angle_weight: 0.3
+  size_weight: 0.2
+
+trajectory_optimization:
+  max_curvature: 0.3
+  collision_margin: 0.2
+  max_iterations: 50
+
 trajectory_smoothing:
-  smooth_weight: 1.0      # 平滑度权重
-  uniform_weight: 0.5     # 均匀性权重
-  geometry_weight: 0.3    # 几何权重
-  max_iterations: 100     # 最大迭代次数
-  
-# 速度规划模块配置
+  smooth_weight: 0.5
+  uniform_weight: 0.3
+  geometry_weight: 0.2
+  max_iterations: 100
+
 velocity_planning:
-  max_velocity: 5.0       # 最大速度（m/s）
-  max_acceleration: 2.0   # 最大加速度（m/s²）
-  max_deceleration: 3.0   # 最大减速度（m/s²）
-  default_profile: 0      # 默认速度曲线类型：0-梯形，1-正弦
-  
-  
-  
+  max_velocity: 2.0
+  max_acceleration: 1.0
+  max_deceleration: 1.5
+  default_profile: 1

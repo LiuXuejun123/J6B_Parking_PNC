@@ -1,32 +1,16 @@
 //
 // Created by lxj on 2026/1/19.
 //
-
 #ifndef J6B_PARKING_PNC_APS_PLANNING_DATATYPE_H
 #define J6B_PARKING_PNC_APS_PLANNING_DATATYPE_H
 #include <cstdint>
+#include <array>
+// Todo 数组需要改为array
 namespace J6B_AD {
     typedef float float32_t;
     typedef double float64_t;
 
     namespace APS_Planning {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Time stamp structure for timestamp representation
         struct TimeStamp {
             uint32_t sec;
